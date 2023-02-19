@@ -1,0 +1,363 @@
+openapi: 3.0.3
+info:
+  title: Books API
+  description: |-
+    This is a simple book API 
+  version: 1.0.11
+servers:
+  - url: http://34.134.94.95:30000/
+  - url: http://0.0.0.0:8000/
+  - url: http://172.17.0.3:8000/
+tags:
+  - name: book
+    description: Everything about the book
+paths:
+  /:
+    get:
+      tags:
+        - book
+      summary: List Books
+      operationId: list_books__get
+      responses:
+        '200':
+          description: List all books
+          content:
+            application/json:
+              schema:
+                title: Response List Books  Get
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookModel'
+        '202':
+          description: No books are added yet!
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyModel'
+          
+    post:
+      tags:
+        - book
+      summary: Create Book
+      operationId: create_book__post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookModel'
+        required: true
+      responses:
+        '200':
+          description: Add a new book
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookModel'
+        '409':
+          description: Already existing book
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExistingBook'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+
+                
+  /{id}:
+    get:
+      tags:
+        - book
+      summary: Show Book
+      operationId: show_book__id__get
+      parameters:
+        - required: true
+          schema:
+            title: Id
+            type: string
+          name: id
+          in: path
+      responses:
+        '200':
+          description: Get a single book
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookModel'
+        '404':
+          description: Book was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    put:
+      tags:
+        - book
+      summary: Update Book
+      operationId: update_book__id__put
+      parameters:
+        - required: true
+          schema:
+            title: Id
+            type: string
+          name: id
+          in: path
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBookModel'
+        required: true
+      responses:
+        '200':
+          description: Update a book
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateSuccessfull'
+        '202':
+          description: no new information found to update the book
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoNewInfo'
+        '404':
+          description: Book was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+        - book
+      summary: Delete Book
+      operationId: delete_book__id__delete
+      parameters:
+        - required: true
+          schema:
+            title: Id
+            type: string
+          name: id
+          in: path
+      responses:
+        '200':
+          description: Delete a book
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/DeletedSuccessfully'
+        '404':
+          description: Book was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    BookModel:
+      title: BookModel
+      required:
+        - SN
+        - title
+        - author
+        - description
+      type: object
+      properties:
+        _id:
+          title: ' Id'
+          type: string
+        SN:
+          title: Sn
+          maxLength: 7
+          minLength: 7
+          type: string
+        title:
+          title: Title
+          type: string
+        author:
+          title: Author
+          type: string
+        description:
+          title: Description
+          type: string
+      example:
+        SN: FN63942
+        title: Hello World
+        author: Muneer Aqraa
+        description: its always hard to write random descriptions and names so i will write this here.
+    DeletedSuccessfully:
+      title: EmptyModel
+      type: string
+      properties:
+        message:
+          type: string
+      example: book 63f2219ce883be7f65ca871d was deleted successfully
+    EmptyModel:
+      title: EmptyModel
+      type: string
+      properties:
+        message:
+          type: string
+      example: no books are added yet!
+    NotFound:
+      title: NotFoundModel
+      type: object
+      properties:
+        detail:
+          title: 'detail'
+          type: string
+      example: 
+        detail: book 63f2219ce883be7f65ca871d was not found
+    UpdateSuccessfull:
+      title: UpdateSuccessfullModel
+      required:
+        - message
+        - book
+        - SN
+        - title
+        - author
+        - description
+      type: object
+      properties:
+        message:
+          title: 'message'
+          type: string
+        book:
+          title: 'book'
+          type: array
+          items:
+            $ref: '#/components/schemas/BookModel'
+      example:
+        message: "book 63f2219ce883be7f65ca871d was updated successfully"
+        book:
+          SN: FN63942
+          title: New World
+          author: Muneer Aqraa
+          description: it is what it is.
+    NoNewInfo:
+      title: NoNewInfoModel
+      required:
+        - message
+        - book
+        - SN
+        - title
+        - author
+        - description
+      type: object
+      properties:
+        message:
+          title: 'message'
+          type: string
+        book:
+          title: 'book'
+          type: array
+          items:
+            $ref: '#/components/schemas/BookModel'
+      example:
+        message: "book 63f2219ce883be7f65ca871d was not updated, no new information found"
+        book:
+          SN: FN63942
+          title: Hello World
+          author: Muneer Aqraa
+          description: its always hard to write random descriptions and names so i will write this here.
+    ExistingBook:
+      title: ExistingBookModel
+      required:
+        - message
+        - existing book
+        - SN
+        - title
+        - author
+        - description
+      type: object
+      properties:
+        message:
+          title: 'message'
+          type: string
+        existing book:
+          title: 'existing book'
+          type: array
+          items:
+            $ref: '#/components/schemas/BookModel'
+      example:
+        message: book with SN FN63942 already exists
+        existing book:
+          SN: FN63942
+          title: Hello World
+          author: Muneer Aqraa
+          description: its always hard to write random descriptions and names so i will write this here.
+    
+
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    UpdateBookModel:
+      title: UpdateBookModel
+      type: object
+      properties:
+        SN:
+          title: Sn
+          type: string
+        title:
+          title: Title
+          type: string
+        author:
+          title: Author
+          type: string
+        description:
+          title: Description
+          type: string
+      example:
+        SN: FN63942
+        title: Hello World
+        author: Muneer Aqraa
+        description: its always hard to write random descriptions and names so i will write this here.
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+  
